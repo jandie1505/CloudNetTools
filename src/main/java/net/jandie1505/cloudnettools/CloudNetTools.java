@@ -1,6 +1,7 @@
 package net.jandie1505.cloudnettools;
 
 import de.myzelyam.api.vanish.BungeeVanishAPI;
+import net.jandie1505.cloudnettools.commands.MoveCommand;
 import net.jandie1505.cloudnettools.commands.PlayerlistCommand;
 import net.jandie1505.cloudnettools.commands.JumpToCommand;
 import net.jandie1505.cloudnettools.commands.WhereIsCommand;
@@ -29,6 +30,7 @@ public class CloudNetTools extends Plugin {
         this.getProxy().getPluginManager().registerCommand(this, new PlayerlistCommand(this));
         this.getProxy().getPluginManager().registerCommand(this, new WhereIsCommand(this));
         this.getProxy().getPluginManager().registerCommand(this, new JumpToCommand(this));
+        this.getProxy().getPluginManager().registerCommand(this, new MoveCommand(this));
 
     }
 
