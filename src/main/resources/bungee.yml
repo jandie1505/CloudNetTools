@@ -1,0 +1,4 @@
+main: net.jandie1505.cloudnettools.CloudNetTools
+name: CloudNetTools
+version: v1.0
+depends: [CloudNet-Bridge]
