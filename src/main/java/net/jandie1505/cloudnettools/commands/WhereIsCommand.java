@@ -3,13 +3,18 @@ package net.jandie1505.cloudnettools.commands;
 import de.myzelyam.api.vanish.BungeeVanishAPI;
 import eu.cloudnetservice.driver.inject.InjectionLayer;
 import eu.cloudnetservice.driver.registry.ServiceRegistry;
-import eu.cloudnetservice.driver.service.ServiceInfoSnapshot;
 import eu.cloudnetservice.modules.bridge.player.CloudPlayer;
 import eu.cloudnetservice.modules.bridge.player.NetworkServiceInfo;
 import eu.cloudnetservice.modules.bridge.player.PlayerManager;
-import eu.cloudnetservice.modules.bridge.player.executor.PlayerExecutor;
 import net.jandie1505.cloudnettools.CloudNetTools;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
@@ -18,27 +23,20 @@ import net.md_5.bungee.api.plugin.TabExecutor;
 import java.util.List;
 import java.util.UUID;
 
-public class JumpToCommand extends Command implements TabExecutor {
-    CloudNetTools plugin;
+public class WhereIsCommand extends Command implements TabExecutor {
+    private CloudNetTools plugin;
 
-    public JumpToCommand(CloudNetTools plugin) {
-        super("jumpto", "cloudnettools.jumpto");
+    public WhereIsCommand(CloudNetTools plugin) {
+        super("whereis", "cloudnettools.whereis");
         this.plugin = plugin;
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
 
-        // player check
-
-        if (!(sender instanceof ProxiedPlayer)) {
-            sender.sendMessage(TextComponent.fromLegacyText("§cThis command can only be executed by a player"));
-            return;
-        }
-
         // permission check
 
-        if (!sender.hasPermission("cloudnettools.jumpto")) {
+        if (!sender.hasPermission("cloudnettools.whereis")) {
             sender.sendMessage(TextComponent.fromLegacyText("§cNo permission"));
             return;
         }
@@ -54,16 +52,7 @@ public class JumpToCommand extends Command implements TabExecutor {
 
         PlayerManager playerManager = InjectionLayer.ext().instance(ServiceRegistry.class).firstProvider(PlayerManager.class);
 
-        // get cloud player of current player + null check
-
-        CloudPlayer player = playerManager.onlinePlayer(((ProxiedPlayer) sender).getUniqueId());
-
-        if (player == null) {
-            sender.sendMessage(TextComponent.fromLegacyText("§cError with your player"));
-            return;
-        }
-
-        // get target (from uuid or name)
+        // get target
 
         CloudPlayer target;
 
@@ -73,7 +62,7 @@ public class JumpToCommand extends Command implements TabExecutor {
             target = playerManager.firstOnlinePlayer(args[0]);
         }
 
-        // target null check
+        // check if target is online
 
         if (target == null) {
             sender.sendMessage(TextComponent.fromLegacyText("§cPlayer does not exist"));
@@ -87,19 +76,43 @@ public class JumpToCommand extends Command implements TabExecutor {
             return;
         }
 
-        // get service of target + null check
+        // get network service info
 
-        NetworkServiceInfo serviceInfo = target.connectedService();
+        NetworkServiceInfo proxy = target.connectedService();
+        NetworkServiceInfo server = target.connectedService();
 
-        if (serviceInfo == null) {
-            sender.sendMessage(TextComponent.fromLegacyText("§cPlayer is currently not connected to any services"));
+        if (proxy == null || server == null) {
+            sender.sendMessage(TextComponent.fromLegacyText("§cService does not exist"));
             return;
         }
 
-        // connect to service of target
+        ComponentBuilder componentBuilder = new ComponentBuilder()
+                .append("Where is player " + target.name() + ":")
+                .color(ChatColor.GREEN)
+                .append("\n")
+                .append("Proxy: ")
+                .color(ChatColor.GREEN)
+                .append(proxy.serverName())
+                .color(ChatColor.YELLOW)
+                .append("\n")
+                .append("Server: ")
+                .color(ChatColor.GREEN)
+                .append(server.serverName())
+                .color(ChatColor.YELLOW);
 
-        playerManager.playerExecutor(player.uniqueId()).connect(serviceInfo.serverName());
-        sender.sendMessage(TextComponent.fromLegacyText("§aJumping to " + target.name() + " (" + serviceInfo.serverName() + ")"));
+        if (sender.hasPermission("cloudnettools.jumpto")) {
+            componentBuilder
+                    .append(" (")
+                    .color(ChatColor.GREEN)
+                    .append("jump")
+                    .color(ChatColor.AQUA)
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jumpto " + target.uniqueId()))
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Jump to the server of " + target.name()).color(ChatColor.AQUA).create()))
+                    .append(")")
+                    .color(ChatColor.GREEN);
+        }
+
+        sender.sendMessage(componentBuilder.create());
 
     }
 
