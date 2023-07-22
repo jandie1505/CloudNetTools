@@ -1,6 +1,7 @@
 package net.jandie1505.cloudnettools;
 
 import de.myzelyam.api.vanish.BungeeVanishAPI;
+import net.jandie1505.cloudnettools.commands.PlayerlistCommand;
 import net.jandie1505.cloudnettools.commands.JumpToCommand;
 import net.jandie1505.cloudnettools.commands.WhereIsCommand;
 import net.luckperms.api.LuckPerms;
@@ -9,6 +10,7 @@ import net.luckperms.api.model.user.User;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 
+import java.util.List;
 import java.util.UUID;
 
 public class CloudNetTools extends Plugin {
@@ -24,6 +26,7 @@ public class CloudNetTools extends Plugin {
             return;
         }
 
+        this.getProxy().getPluginManager().registerCommand(this, new PlayerlistCommand(this));
         this.getProxy().getPluginManager().registerCommand(this, new WhereIsCommand(this));
         this.getProxy().getPluginManager().registerCommand(this, new JumpToCommand(this));
 
@@ -64,15 +67,19 @@ public class CloudNetTools extends Plugin {
 
     }
 
-    public boolean isHidden(UUID uniqueId) {
+    public List<UUID> getHiddenPlayers() {
 
         try {
             Class.forName("de.myzelyam.api.vanish.BungeeVanishAPI");
 
-            return BungeeVanishAPI.getAllInvisiblePlayers().contains(uniqueId);
+            return List.copyOf(BungeeVanishAPI.getAllInvisiblePlayers());
         } catch (ClassNotFoundException e) {
-            return false;
+            return List.of();
         }
 
+    }
+
+    public boolean isHidden(UUID uniqueId) {
+        return this.getHiddenPlayers().contains(uniqueId);
     }
 }
