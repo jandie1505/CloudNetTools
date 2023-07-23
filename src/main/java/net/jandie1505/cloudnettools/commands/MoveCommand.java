@@ -25,7 +25,7 @@ public class MoveCommand extends Command implements TabExecutor {
     private final CloudNetTools plugin;
 
     public MoveCommand(CloudNetTools plugin) {
-        super("move", "cloudnettools.move", "mv");
+        super("move", "cloudnettools.move");
         this.plugin = plugin;
     }
 
