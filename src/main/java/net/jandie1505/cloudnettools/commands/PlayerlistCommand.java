@@ -131,7 +131,7 @@ public class PlayerlistCommand extends Command implements TabExecutor {
                         .append("\n")
                         .append("UUID: ")
                         .color(ChatColor.GREEN)
-                        .append(player.name())
+                        .append(player.uniqueId().toString())
                         .color(ChatColor.YELLOW)
                         .append("\n")
                         .append("Hidden: ")
